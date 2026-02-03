@@ -1,0 +1,33 @@
+# OS / Editor Junk
+Thumbs.db
+Desktop.ini
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Logs (only upload sanitized logs manually)
+*.log
+logs/*
+
+# Python / Scripts
+__pycache__/
+*.pyc
+
+# PowerShell
+*.ps1~
+*.psm1~
+*.psd1~
+
+# Config backups
+*.old
+*.backup
+*.bak
+
+# Sensitive placeholders (you will manually sanitize configs before committing)
+secrets/
+private/
+*.key
+*.pem
+*.pfx
+*.crt
