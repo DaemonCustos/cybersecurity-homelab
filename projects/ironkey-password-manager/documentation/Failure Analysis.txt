@@ -1,0 +1,206 @@
+=== IronKey KeePassXC Portable – Failure Analysis ===
+
+This document records all failures encountered during the development of
+the IronKey portable KeePassXC workflow. Each failure includes the root
+cause, validation method, and final resolution. These findings support
+academic evaluation, reproducibility, and architectural justification.
+
+------------------------------------------------------------
+1. Failure: Linux Cannot Execute Files from IronKey
+------------------------------------------------------------
+
+Symptoms:
+- AppImage would not run from the IronKey.
+- Shell scripts would not execute.
+- chmod +x had no effect.
+
+Root Cause:
+The IronKey secure partition is FAT32 and is auto-mounted by udisks2
+with the "showexec" flag. This prevents Linux from executing AppImages,
+ELF binaries, or shell scripts directly from the device.
+
+This prevents execution but does not require installation.
+
+Validation:
+- Verified mount options using `mount | grep KINGSTON`.
+- Observed "showexec" and "noexec" behavior.
+- Attempted remount with exec; behavior persisted.
+
+Resolution:
+A Linux runner script was created and executed from a native filesystem.
+The script copies the AppImage to /tmp, executes it directly, and
+self-deletes.
+
+------------------------------------------------------------
+2. Failure: Remounting IronKey with exec Has No Effect
+------------------------------------------------------------
+
+Symptoms:
+- `sudo mount -o remount,exec` appeared to succeed.
+- Executables still refused to run.
+
+Root Cause:
+udisks2 enforces mount policies for removable media. Even if the user
+remounts with exec, udisks2 immediately re-applies "showexec" based on
+the filesystem type (FAT32).
+
+Validation:
+- Compared mount options before and after remount.
+- Observed no change in effective behavior.
+
+Resolution:
+Execution was moved off-device to a native filesystem. No further
+attempts to override udisks2 were required.
+
+------------------------------------------------------------
+3. Failure: Windows-Created Scripts Fail on Linux
+------------------------------------------------------------
+
+Symptoms:
+- Script produced “bad interpreter” errors.
+- Shebang line not recognized.
+
+Root Cause:
+Windows uses CRLF line endings. Linux requires LF-only for shebang
+parsing. The presence of CRLF breaks script execution.
+
+Validation:
+- Inspected file using `cat -A` and `file` commands.
+- Observed CRLF characters (^M).
+
+Resolution:
+Script was recreated directly on Linux to ensure LF-only formatting.
+This version became the final runner script.
+
+------------------------------------------------------------
+4. Failure: IronKey in Passphrase Mode Cannot Unlock on Linux
+------------------------------------------------------------
+
+Symptoms:
+- Linux unlocker rejected the device.
+- No prompt for passphrase appeared.
+
+Root Cause:
+IronKey D500S firmware supports Passphrase Mode only on Windows. The
+Linux unlocker supports Complex Mode exclusively.
+
+Validation:
+- Tested unlock attempts on AlmaLinux.
+- Reviewed IronKey documentation and firmware notes.
+
+Resolution:
+Device was reconfigured to Complex Mode. This became a mandatory
+requirement for cross-platform use.
+
+------------------------------------------------------------
+5. Failure: Attempting to Execute AppImage Directly from IronKey
+------------------------------------------------------------
+
+Symptoms:
+- Permission denied errors.
+- AppImage refused to launch even with chmod +x.
+
+Root Cause:
+FAT32 does not support Unix executable permissions. Combined with
+"showexec", Linux treats the AppImage as non-executable regardless of
+permissions.
+
+This prevents execution but does not imply installation is required.
+
+Validation:
+- Verified AppImage runs normally when copied to /tmp.
+- Verified failure only occurs when executed from IronKey.
+
+Resolution:
+Runner script copies AppImage to /tmp before execution.
+
+------------------------------------------------------------
+6. Failure: GUI File Deletions Create .Trash-UID on IronKey
+------------------------------------------------------------
+
+Symptoms:
+- Unexpected `.Trash-1000` directory appeared on IronKey.
+
+Root Cause:
+Linux desktop environments (GNOME, KDE, etc.) do not permanently delete
+files from removable media. Instead, they create a `.Trash-UID`
+directory on the device.
+
+Validation:
+- Observed directory after deleting a file via GUI.
+- Confirmed it was not created by the workflow.
+
+Resolution:
+Documented as a non-workflow artifact. Recommended deletion via terminal
+to avoid Trash directories.
+
+------------------------------------------------------------
+7. Failure: Misinterpretation of KeePassXC Host Directories
+------------------------------------------------------------
+
+Symptoms:
+- Presence of:
+      ~/.config/keepassxc
+      ~/.cache/keepassxc
+
+Root Cause:
+These directories were created by the host’s installed KeePassXC, not by
+the portable workflow.
+
+Validation:
+- Verified timestamps and contents.
+- Confirmed portable workflow does not create these directories.
+
+Resolution:
+Documented distinction between host-installed KeePassXC and portable
+KeePassXC behavior.
+
+------------------------------------------------------------
+8. Failure: Initial Assumption That IronKey Could Execute Linux Binaries
+------------------------------------------------------------
+
+Symptoms:
+- Early workflow drafts assumed AppImage could run directly from device.
+
+Root Cause:
+Incorrect assumption about FAT32 execution behavior on Linux.
+
+Validation:
+- Empirical testing on AlmaLinux.
+- Review of udisks2 mount policies.
+
+Resolution:
+Architecture updated to require native filesystem execution via runner
+script.
+
+------------------------------------------------------------
+9. Failure: Attempt to Bypass FAT32 Execution Restrictions
+------------------------------------------------------------
+
+Symptoms:
+- Considered remounting with exec or altering mount policies.
+
+Root Cause:
+Such changes require system-level modifications and violate the
+portability and host-trust model.
+
+Validation:
+- Reviewed udisks2 documentation.
+- Verified that policy overrides require root-level configuration.
+
+Resolution:
+Abandoned approach. Adopted portable, host-agnostic runner script model.
+
+------------------------------------------------------------
+10. Failure: Early Workflow Did Not Include Provenance Verification
+------------------------------------------------------------
+
+Symptoms:
+- Initial design lacked SOURCE.txt and DIGEST files.
+
+Root Cause:
+Provenance was not included in early drafts.
+
+Validation:
+- Identified need for supply-chain integrity.
+- Added SHA

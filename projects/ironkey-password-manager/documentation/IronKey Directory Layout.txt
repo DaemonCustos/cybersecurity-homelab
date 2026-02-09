@@ -1,0 +1,26 @@
+KINGSTON (IronKey Secure Partition)
+│
+├── KeePassXC-Linux/
+│     ├── KeePassXC-2.7.11-1-x86_64.AppImage
+│     ├── KeePassXC-2.7.11-1-x86_64.AppImage.DIGEST
+│     └── SOURCE.txt
+│
+├── KeePassXC-Windows/
+│     ├── KeePassXC.exe
+│     ├── KeePassXC.exe.DIGEST
+│     └── SOURCE.txt
+│
+├── IronKeyVault/
+│     └── IronKeyVault.kdbx
+│
+├── ironkey-keepass.sh
+│     (Linux runner script; must be copied to a native filesystem before use)
+│
+├── Linux-Instructions.txt
+│     (Explains Linux workflow, FAT32 limitations, and self-scrubbing behavior)
+│
+├── Windows-Instructions.txt
+│     (Explains Windows workflow and Complex password mode requirement)
+│
+└── README.txt
+      (High-level overview of the IronKey portable KeePassXC system)

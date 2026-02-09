@@ -1,0 +1,145 @@
+=== IronKey KeePassXC Portable – Residual Artifact Audit ===
+
+This document records the verification steps performed to confirm that
+the IronKey portable KeePassXC workflow leaves no residue on Linux or
+Windows hosts. All commands, expected results, and actual results are
+included for auditability.
+
+------------------------------------------------------------
+1. Linux Residual Audit (IronKey Disconnected)
+------------------------------------------------------------
+
+A. /tmp Directory Check
+Command:
+ls -l /tmp | grep KeePassXC
+
+Expected:
+(no output)
+
+Actual:
+(no output)
+
+Interpretation:
+The temporary AppImage was successfully deleted by the runner script.
+
+------------------------------------------------------------
+
+B. Runner Script Self-Deletion
+Command:
+ls -l ~/Desktop | grep ironkey-keepass.sh
+
+Expected:
+(no output)
+
+Actual:
+(no output)
+
+Interpretation:
+The runner script self-deleted as designed.
+
+------------------------------------------------------------
+
+C. KeePassXC Configuration Directories
+Commands:
+ls -d ~/.config/keepass* 2>/dev/null
+ls -d ~/.local/share/keepass* 2>/dev/null
+ls -d ~/.cache/keepass* 2>/dev/null
+
+Expected:
+No KeePassXC directories created by the portable workflow.
+Directories may exist if KeePassXC is installed on the host.
+
+Actual:
+/home/Marduke/.config/keepassxc
+/home/Marduke/.cache/keepassxc
+
+Interpretation:
+These directories were created by the host’s installed KeePassXC,
+not by the portable AppImage workflow. They do not indicate residue.
+
+------------------------------------------------------------
+2. IronKey Integrity Audit (IronKey Connected)
+------------------------------------------------------------
+
+Command:
+ls -la /run/media/Marduke/KINGSTON
+
+Expected:
+Only files and directories defined in the Final IronKey Directory Layout.
+
+Actual:
+A .Trash-1000 directory was present.
+
+Interpretation:
+.Trash-1000 is created by the Linux GUI when deleting files from a
+removable FAT32 device. It is not created by the KeePassXC workflow
+and can be safely removed.
+
+------------------------------------------------------------
+3. Windows Residual Audit
+------------------------------------------------------------
+
+A. Application Data Check
+Commands:
+Get-ChildItem $env:APPDATA | Where-Object { $_.Name -like "KeePass*" }
+Get-ChildItem $env:LOCALAPPDATA | Where-Object { $_.Name -like "KeePass*" }
+Get-ChildItem $env:PROGRAMDATA | Where-Object { $_.Name -like "KeePass*" }
+
+Expected:
+(no output)
+
+Actual:
+(no output)
+
+Interpretation:
+KeePassXC portable did not create persistent directories.
+
+------------------------------------------------------------
+
+B. Temporary Files Check
+Command:
+Get-ChildItem $env:TEMP | Where-Object { $_.Name -like "KeePass*" }
+
+Expected:
+(no output)
+
+Actual:
+(no output)
+
+Interpretation:
+No temporary files were created by KeePassXC portable.
+
+------------------------------------------------------------
+
+C. Registry Check (Optional)
+Commands:
+reg query HKCU\Software | findstr /I "KeePass"
+reg query HKLM\Software | findstr /I "KeePass"
+
+Expected:
+(no output)
+
+Actual:
+(no output)
+
+Interpretation:
+KeePassXC portable did not create registry entries.
+
+------------------------------------------------------------
+4. Summary
+------------------------------------------------------------
+
+- Linux runner script left no residue in /tmp or the execution directory.
+- KeePassXC portable left no configuration, cache, or data files on Linux.
+- Existing KeePassXC directories were from the host’s installed KeePassXC.
+- IronKey contained one GUI-generated artifact (.Trash-1000), not related
+  to the workflow.
+- Windows portable KeePassXC left no files, directories, temp data, or
+  registry entries.
+
+The IronKey portable KeePassXC workflow is confirmed to be zero-residue
+on both Linux and Windows hosts.
+
+------------------------------------------------------------
+End of Residual Artifact Audit
+------------------------------------------------------------
