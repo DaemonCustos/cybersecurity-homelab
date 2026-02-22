@@ -1,0 +1,182 @@
+CONSOLIDATED DOCUMENTATION BLOCK
+Switch Phase — Cisco WS‑C3750X‑48PF‑E
+
+This block contains the complete, authoritative configuration and operational
+state for the switch after Phase 1 hardening. It is designed for publication,
+audit, reproducibility, and long‑term maintenance.
+
+===============================================================
+1. DEVICE IDENTIFICATION
+===============================================================
+Model: Cisco WS‑C3750X‑48PF‑E
+Software: C3750E-UNIVERSALK9-M, Version 15.2(4)E7
+Role: Layer‑2 Core Switch
+Mode: L2‑only (no routed physical interfaces)
+Management VLAN: 10 (CORE‑10)
+Management IP: 10.0.10.2/24
+
+===============================================================
+2. VLAN DEFINITIONS
+===============================================================
+vlan 10   name CORE-10
+vlan 20   name APP-20
+vlan 30   name MEDIA-30
+vlan 40   name GAME-40
+vlan 50   name LOG-50
+vlan 60   name ADM-60
+vlan 70   name LAN-70
+vlan 80   name IOT-80
+vlan 90   name STR-90
+vlan 100  name LAB-100
+
+===============================================================
+3. PORT ROLE ASSIGNMENTS
+===============================================================
+Gi1/0/1   UPLINK-ROUTER   trunk
+Gi1/0/2   SERVER-TRUNK    trunk
+Gi1/0/3   DESKTOP-LAN70   access vlan 70
+Gi1/0/4   TV-STREAMING    access vlan 90
+Gi1/0/5–48 UNUSED-SHUT    shutdown, access vlan 1
+
+===============================================================
+4. TRUNK CONFIGURATION
+===============================================================
+interface Gi1/0/1
+  description UPLINK-ROUTER
+  switchport mode trunk
+  switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90,100
+  switchport nonegotiate
+
+interface Gi1/0/2
+  description SERVER-TRUNK
+  switchport mode trunk
+  switchport trunk allowed vlan 10,20,30,40,50
+  switchport nonegotiate
+
+===============================================================
+5. ACCESS PORT CONFIGURATION
+===============================================================
+interface Gi1/0/3
+  description DESKTOP-LAN70
+  switchport mode access
+  switchport access vlan 70
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+
+interface Gi1/0/4
+  description TV-STREAMING
+  switchport mode access
+  switchport access vlan 90
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+
+===============================================================
+6. UNUSED PORT HARDENING
+===============================================================
+interface range Gi1/0/5 – 48
+  description UNUSED-SHUT
+  switchport mode access
+  switchport access vlan 1
+  shutdown
+
+===============================================================
+7. LAYER‑2 SECURITY CONTROLS
+===============================================================
+! DHCP Snooping
+ip dhcp snooping
+ip dhcp snooping vlan 10
+no ip dhcp snooping information option allow-untrusted
+
+! STP Hardening
+spanning-tree portfast default
+spanning-tree bpduguard default
+
+===============================================================
+8. MANAGEMENT PLANE CONFIGURATION
+===============================================================
+interface Vlan10
+  description CORE-MGMT
+  ip address 10.0.10.2 255.255.255.0
+  no shutdown
+
+! VTY Access Control
+ip access-list standard MGMT-VTY
+  permit 10.0.10.0 0.0.0.255
+
+line vty 0 4
+  transport input ssh
+  access-class MGMT-VTY in
+
+! SSH
+crypto key generate rsa modulus 2048
+ip ssh version 2
+
+! Banner
+banner login !
+UNAUTHORIZED ACCESS PROHIBITED.
+Welcome, Citadel-Admin.
+!
+
+===============================================================
+9. SERVICE HARDENING
+===============================================================
+no cdp run
+lldp run
+no ip http server
+no ip http secure-server
+no service finger
+no service pad
+no service tcp-small-servers
+no service udp-small-servers
+no ip source-route
+no service timestamps debug uptime
+no service timestamps log uptime
+
+===============================================================
+10. POST‑RELOAD VERIFICATION (SUCCESSFUL)
+===============================================================
+show vlan brief
+  → All VLANs present and active.
+
+show interfaces status
+  → Trunks correct, access ports correct, unused ports shutdown.
+
+show interfaces switchport
+  → No dynamic auto ports; all roles persisted.
+
+show ip dhcp snooping
+  → Snooping enabled and operational on VLAN 10.
+
+show lldp
+  → LLDP ACTIVE.
+
+show cdp
+  → CDP disabled.
+
+show ip interface brief | include Vlan10
+  → Vlan10 up/down (correct for no active ports).
+
+===============================================================
+11. PHASE‑1 COMPLETION STATUS
+===============================================================
+All switch‑phase tasks are complete:
+
+✓ VLAN segmentation  
+✓ Port role assignment  
+✓ Trunk configuration  
+✓ Access port configuration  
+✓ Shutdown of unused ports  
+✓ DHCP Snooping (Phase‑1 baseline)  
+✓ STP hardening  
+✓ LLDP enabled  
+✓ CDP disabled  
+✓ HTTP/HTTPS disabled  
+✓ Legacy services disabled  
+✓ Source routing disabled  
+✓ Management SVI configured  
+✓ SSH and VTY ACL configured  
+✓ Banner configured  
+✓ Configuration persisted  
+✓ Post‑reload verification passed  
+
+The switch is fully hardened and ready for Phase 2 (Router Build).

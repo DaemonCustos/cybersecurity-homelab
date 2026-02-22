@@ -1,0 +1,113 @@
+ARCHITECTURE OVERVIEW — SWITCH PHASE
+Cisco WS‑C3750X‑48PF‑E (Layer‑2 Core Switch)
+
+1. ROLE IN NETWORK TOPOLOGY
+---------------------------
+The Catalyst 3750X functions as the Layer‑2 switching core for the homelab
+infrastructure. It provides deterministic VLAN segmentation, hardened access
+ports, and secure uplinks to the router and server. The switch enforces
+zero‑trust boundaries and ensures that all inter‑VLAN routing occurs at the
+router, not the switch.
+
+The switch is responsible for:
+- VLAN segmentation (10–100)
+- Trunk uplinks to router and server
+- Access ports for LAN and streaming devices
+- Enforcement of L2 security controls (BPDU Guard, DHCP Snooping, etc.)
+- Management-plane isolation via VLAN 10 (CORE‑10)
+
+2. VLAN STRUCTURE
+-----------------
+VLAN 10  CORE‑10     (Management)
+VLAN 20  APP‑20      (Application)
+VLAN 30  MEDIA‑30    (Media)
+VLAN 40  GAME‑40     (Gaming)
+VLAN 50  LOG‑50      (Logging)
+VLAN 60  ADM‑60      (Admin)
+VLAN 70  LAN‑70      (General LAN)
+VLAN 80  IOT‑80      (IoT)
+VLAN 90  STR‑90      (Streaming)
+VLAN 100 LAB‑100     (Lab/Testing)
+
+All VLANs are active and persist across reload.
+
+3. PORT ROLES
+-------------
+Gi1/0/1  UPLINK‑ROUTER   (Trunk)
+Gi1/0/2  SERVER‑TRUNK    (Trunk)
+Gi1/0/3  DESKTOP‑LAN70   (Access VLAN 70)
+Gi1/0/4  TV‑STREAMING    (Access VLAN 90)
+Gi1/0/5–48 UNUSED‑SHUT   (Shutdown, Access VLAN 1)
+
+All unused ports are administratively down.
+
+4. LAYER‑2 HARDENING CONTROLS
+-----------------------------
+The following controls are active and persistent:
+
+- BPDU Guard (global)
+- PortFast (access ports)
+- DHCP Snooping (VLAN 10)
+- Option 82 insertion enabled
+- No trusted ports (correct for Phase 1)
+- LLDP enabled
+- CDP disabled
+- HTTP/HTTPS server disabled
+- Legacy services disabled:
+    - finger
+    - pad
+    - tcp-small-servers
+    - udp-small-servers
+- Source routing disabled
+- Service timestamps normalized
+- Unused ports shutdown
+
+These controls enforce a zero‑trust L2 environment and prevent common attack
+vectors such as rogue DHCP servers, STP manipulation, and information leakage.
+
+5. MANAGEMENT PLANE
+-------------------
+Management SVI:
+- Interface: Vlan10
+- IP: 10.0.10.2/24
+- State: up/down (correct — no active ports in VLAN 10 yet)
+
+Access Control:
+- SSH‑only management
+- VTY ACL restricting access to CORE‑10
+- Login banner configured with proper delimiter usage
+
+6. TRUNK CONFIGURATION
+----------------------
+Gi1/0/1 (Router Uplink):
+- Mode: trunk
+- Allowed VLANs: 10,20,30,40,50,60,70,80,90,100
+- Native VLAN: 1 (default)
+
+Gi1/0/2 (Server Uplink):
+- Mode: trunk
+- Allowed VLANs: 10,20,30,40,50
+- Native VLAN: 1 (default)
+
+7. PHASE‑1 COMPLETION STATUS
+----------------------------
+All required switch‑phase tasks are complete:
+
+- VLAN segmentation
+- Port role assignment
+- Trunk configuration
+- Access port configuration
+- Shutdown of unused ports
+- DHCP Snooping (partial, correct for Phase 1)
+- STP hardening
+- LLDP enabled
+- CDP disabled
+- HTTP/HTTPS disabled
+- Legacy services disabled
+- Source routing disabled
+- Management SVI configured
+- SSH and VTY ACL configured
+- Banner configured
+- Configuration persisted and verified after reload
+
+The switch is now fully hardened and ready for Phase 2 (Router Build).

@@ -1,0 +1,108 @@
+ACADEMIC SUMMARY — SWITCH PHASE
+Cisco WS‑C3750X‑48PF‑E
+
+1. INTRODUCTION
+---------------
+This document provides an academically structured summary of the design,
+configuration, and hardening of a Cisco WS‑C3750X‑48PF‑E switch as part of a
+zero‑trust homelab infrastructure. The switch serves as the Layer‑2 core,
+implementing deterministic segmentation, strict access control, and
+enterprise‑grade security practices. The configuration process emphasizes
+reproducibility, auditability, and alignment with zero‑trust principles.
+
+2. OBJECTIVES
+-------------
+The primary objectives of the switch‑phase build were:
+
+1. Establish a deterministic VLAN architecture supporting multiple security
+   and functional domains.
+2. Implement strict port‑role assignments to eliminate ambiguity and prevent
+   unauthorized lateral movement.
+3. Apply Layer‑2 security controls to mitigate common attack vectors such as
+   rogue DHCP servers, STP manipulation, and trunk negotiation exploits.
+4. Harden the management plane to ensure secure, isolated administrative
+   access.
+5. Disable legacy and unnecessary services to reduce the attack surface.
+6. Validate configuration persistence and operational integrity through a
+   controlled reload and post‑reload verification.
+
+3. METHODOLOGY
+--------------
+The configuration process followed a structured, stepwise methodology:
+
+- Define VLANs and assign semantic names.
+- Map physical ports to deterministic roles (router, server, access, unused).
+- Configure trunk ports with explicit allowed VLAN lists and disabled
+  negotiation.
+- Configure access ports with PortFast and BPDU Guard.
+- Shut down all unused ports to eliminate passive attack vectors.
+- Enable DHCP Snooping on the management VLAN.
+- Apply global STP hardening.
+- Configure the management SVI and restrict VTY access via ACL.
+- Enable LLDP and disable CDP.
+- Disable HTTP/HTTPS servers and legacy services.
+- Persist configuration and perform a full reload.
+- Conduct post‑reload verification to confirm configuration integrity.
+
+This methodology ensures reproducibility and minimizes configuration drift.
+
+4. SECURITY CONTROLS IMPLEMENTED
+--------------------------------
+The following controls were applied to align with zero‑trust and best‑practice
+enterprise hardening:
+
+- **DHCP Snooping** (VLAN 10)
+- **BPDU Guard** (global)
+- **PortFast** (access ports)
+- **LLDP enabled**, **CDP disabled**
+- **HTTP/HTTPS disabled**
+- **Legacy services disabled**:
+  - finger
+  - pad
+  - tcp-small-servers
+  - udp-small-servers
+- **Source routing disabled**
+- **Unused ports shutdown**
+- **VTY restricted to management subnet**
+- **SSH‑only management**
+- **Banner configured with correct delimiter usage**
+
+These controls collectively reduce the attack surface and enforce strict
+boundary protections.
+
+5. PLATFORM‑SPECIFIC BEHAVIOR
+-----------------------------
+Several commands were found to be unsupported on the WS‑C3750X‑48PF‑E in
+Layer‑2 mode:
+
+- `no ip bootp server`
+- `no ip proxy-arp`
+
+These omissions are expected and do not represent configuration gaps. The
+platform does not support these features in its current operational mode.
+
+6. VERIFICATION AND VALIDATION
+------------------------------
+A full reload was performed to validate configuration persistence. Post‑reload
+verification confirmed:
+
+- All VLANs remained active.
+- Trunk and access port roles persisted.
+- Shutdown state of unused ports persisted.
+- DHCP Snooping remained active on VLAN 10.
+- LLDP remained enabled; CDP remained disabled.
+- Management SVI (Vlan10) remained configured and reachable.
+- No configuration drift or unexpected behavior occurred.
+
+The reload logs also confirmed successful POST diagnostics, flash integrity,
+and digital signature verification of the IOS image.
+
+7. CONCLUSION
+-------------
+The switch‑phase build successfully established a hardened, deterministic,
+and audit‑ready Layer‑2 foundation for the homelab infrastructure. The
+configuration adheres to zero‑trust principles, minimizes attack surface,
+and ensures operational clarity for future phases (router and server builds).
+
+The system is now ready for Phase 2, where inter‑VLAN routing, firewalling,
+and DHCP services will be implemented on the router.

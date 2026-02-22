@@ -1,0 +1,133 @@
+WORKFLOW DIAGRAM (ASCII)
+Switch Phase — Cisco WS‑C3750X‑48PF‑E
+
+This diagram represents the deterministic, step‑by‑step workflow used to
+configure, harden, verify, and persist the switch state. Each block reflects
+a discrete operational phase with no implicit steps.
+
++---------------------------------------------------------------+
+|                       START: BASELINE                         |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------+
+| 1. ENTER PRIVILEGED MODE |
++---------------------------+
+        |
+        v
++---------------------------+
+| 2. ENTER CONFIG MODE     |
++---------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 3. CREATE VLAN STRUCTURE (10–100)                             |
+|   - vlan 10 CORE-10                                           |
+|   - vlan 20 APP-20                                            |
+|   - vlan 30 MEDIA-30                                          |
+|   - vlan 40 GAME-40                                           |
+|   - vlan 50 LOG-50                                            |
+|   - vlan 60 ADM-60                                            |
+|   - vlan 70 LAN-70                                            |
+|   - vlan 80 IOT-80                                            |
+|   - vlan 90 STR-90                                            |
+|   - vlan 100 LAB-100                                          |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 4. ASSIGN PORT ROLES                                          |
+|   - Gi1/0/1 → Router (trunk)                                  |
+|   - Gi1/0/2 → Server (trunk)                                  |
+|   - Gi1/0/3 → Desktop (VLAN 70)                               |
+|   - Gi1/0/4 → TV (VLAN 90)                                    |
+|   - Gi1/0/5–48 → Shutdown (unused)                            |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 5. CONFIGURE TRUNKS                                           |
+|   - switchport mode trunk                                     |
+|   - switchport trunk allowed vlan <list>                      |
+|   - switchport nonegotiate                                    |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 6. CONFIGURE ACCESS PORTS                                     |
+|   - switchport mode access                                    |
+|   - switchport access vlan <id>                               |
+|   - spanning-tree portfast                                    |
+|   - spanning-tree bpduguard enable                            |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 7. SHUTDOWN UNUSED PORTS                                      |
+|   - switchport mode access                                    |
+|   - shutdown                                                  |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 8. ENABLE L2 SECURITY                                         |
+|   - ip dhcp snooping                                          |
+|   - ip dhcp snooping vlan 10                                  |
+|   - no ip dhcp snooping trust                                 |
+|   - spanning-tree portfast default                            |
+|   - spanning-tree bpduguard default                           |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 9. MANAGEMENT PLANE SETUP                                     |
+|   - interface Vlan10                                          |
+|   - ip address 10.0.10.2/24                                   |
+|   - ip access-list MGMT-VTY                                   |
+|   - line vty 0 4 → ssh only                                   |
+|   - banner login configured                                   |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 10. SERVICE HARDENING                                         |
+|   - no cdp run                                                |
+|   - lldp run                                                  |
+|   - no ip http server                                         |
+|   - no ip http secure-server                                  |
+|   - no service finger                                         |
+|   - no service pad                                            |
+|   - no service tcp-small-servers                              |
+|   - no service udp-small-servers                              |
+|   - no ip source-route                                        |
+|   - no service timestamps debug uptime                        |
+|   - no service timestamps log uptime                          |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------+
+| 11. WRITE MEMORY          |
++---------------------------+
+        |
+        v
++---------------------------+
+| 12. RELOAD SWITCH         |
++---------------------------+
+        |
+        v
++---------------------------------------------------------------+
+| 13. POST‑RELOAD VERIFICATION                                  |
+|   - show vlan brief                                           |
+|   - show interfaces status                                    |
+|   - show interfaces switchport                                |
+|   - show ip dhcp snooping                                     |
+|   - show lldp                                                 |
+|   - show cdp                                                  |
+|   - show ip interface brief | include Vlan10                  |
++---------------------------------------------------------------+
+        |
+        v
++---------------------------+
+|        END: PHASE 1       |
+|   SWITCH FULLY HARDENED   |
++---------------------------+

@@ -1,0 +1,149 @@
+COMMAND LOG — CLEAN & DEDUPLICATED
+Switch Phase — Cisco WS‑C3750X‑48PF‑E
+
+This log contains the authoritative list of all commands used to configure and
+harden the switch during Phase 1. Commands are grouped by functional category
+and presented in the exact order required to reproduce the final state.
+
+===============================================================
+1. PRIVILEGED & CONFIGURATION MODE
+===============================================================
+enable
+configure terminal
+
+===============================================================
+2. VLAN CREATION
+===============================================================
+vlan 10
+ name CORE-10
+vlan 20
+ name APP-20
+vlan 30
+ name MEDIA-30
+vlan 40
+ name GAME-40
+vlan 50
+ name LOG-50
+vlan 60
+ name ADM-60
+vlan 70
+ name LAN-70
+vlan 80
+ name IOT-80
+vlan 90
+ name STR-90
+vlan 100
+ name LAB-100
+
+===============================================================
+3. TRUNK PORT CONFIGURATION
+===============================================================
+interface Gi1/0/1
+ description UPLINK-ROUTER
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90,100
+ switchport nonegotiate
+
+interface Gi1/0/2
+ description SERVER-TRUNK
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport nonegotiate
+
+===============================================================
+4. ACCESS PORT CONFIGURATION
+===============================================================
+interface Gi1/0/3
+ description DESKTOP-LAN70
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+
+interface Gi1/0/4
+ description TV-STREAMING
+ switchport mode access
+ switchport access vlan 90
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+
+===============================================================
+5. UNUSED PORT HARDENING
+===============================================================
+interface range Gi1/0/5 - 48
+ description UNUSED-SHUT
+ switchport mode access
+ switchport access vlan 1
+ shutdown
+
+===============================================================
+6. LAYER‑2 SECURITY CONTROLS
+===============================================================
+! DHCP Snooping
+ip dhcp snooping
+ip dhcp snooping vlan 10
+no ip dhcp snooping information option allow-untrusted
+
+! STP Hardening
+spanning-tree portfast default
+spanning-tree bpduguard default
+
+===============================================================
+7. MANAGEMENT PLANE CONFIGURATION
+===============================================================
+interface Vlan10
+ description CORE-MGMT
+ ip address 10.0.10.2 255.255.255.0
+ no shutdown
+
+! VTY ACL
+ip access-list standard MGMT-VTY
+ permit 10.0.10.0 0.0.0.255
+
+! SSH-only VTY
+line vty 0 4
+ transport input ssh
+ access-class MGMT-VTY in
+
+! SSH
+crypto key generate rsa modulus 2048
+ip ssh version 2
+
+! Banner
+banner login !
+UNAUTHORIZED ACCESS PROHIBITED.
+Welcome, Citadel-Admin.
+!
+
+===============================================================
+8. SERVICE HARDENING
+===============================================================
+no cdp run
+lldp run
+no ip http server
+no ip http secure-server
+no service finger
+no service pad
+no service tcp-small-servers
+no service udp-small-servers
+no ip source-route
+no service timestamps debug uptime
+no service timestamps log uptime
+
+===============================================================
+9. SAVE & RELOAD
+===============================================================
+end
+write memory
+reload
+
+===============================================================
+10. POST‑RELOAD VERIFICATION COMMANDS
+===============================================================
+show vlan brief
+show interfaces status
+show interfaces switchport
+show ip dhcp snooping
+show lldp
+show cdp
+show ip interface brief | include Vlan10

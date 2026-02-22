@@ -1,0 +1,172 @@
+FAILURE ANALYSIS — SWITCH PHASE
+Cisco WS‑C3750X‑48PF‑E
+
+This document captures all errors, misconfigurations, misunderstandings, and
+course corrections encountered during the switch hardening process. Each entry
+includes the cause, resolution, and operational outcome. This ensures full
+transparency, reproducibility, and academic traceability.
+
+1. ACL Wildcard Mask Error
+--------------------------
+Issue:
+Incorrect wildcard mask (0.0.0.225) was entered for the VTY management ACL.
+
+Cause:
+Misreading of the intended /24 mask during initial ACL creation.
+
+Resolution:
+Corrected to 0.0.0.255.
+
+Outcome:
+VTY ACL now correctly restricts SSH access to the CORE‑10 subnet.
+
+2. ACL Deletion Attempt in Sub‑Mode
+-----------------------------------
+Issue:
+Attempted to delete an ACL using "no ip access-list" while still inside ACL
+configuration mode.
+
+Cause:
+Cisco IOS requires exiting ACL sub‑mode before removing the ACL.
+
+Resolution:
+Exited to global configuration mode and reissued the deletion command.
+
+Outcome:
+ACL cleanup succeeded without residual entries.
+
+3. VLAN Plan Drift
+------------------
+Issue:
+Initial VLAN plan (4 VLANs) conflicted with the final 10‑VLAN design.
+
+Cause:
+The network plan evolved during the session, but the early VLAN list was not
+updated immediately.
+
+Resolution:
+Aligned VLANs to the final design (10,20,30,40,50,60,70,80,90,100).
+
+Outcome:
+Consistent VLAN structure across documentation, switch config, and future
+router/server phases.
+
+4. Port Role Ambiguity
+----------------------
+Issue:
+Uncertainty regarding final port assignments for router, server, desktop, and
+streaming device.
+
+Cause:
+Multiple iterations of the network plan before finalizing deterministic port
+roles.
+
+Resolution:
+Locked in authoritative mapping:
+- Gi1/0/1 Router (trunk)
+- Gi1/0/2 Server (trunk)
+- Gi1/0/3 Desktop (VLAN 70)
+- Gi1/0/4 TV (VLAN 90)
+
+Outcome:
+Deterministic topology with no ambiguity.
+
+5. Dynamic Auto Ports
+---------------------
+Issue:
+All unused ports defaulted to "dynamic auto" mode.
+
+Cause:
+Cisco IOS defaults access ports to dynamic negotiation unless explicitly set.
+
+Resolution:
+Set all unused ports to:
+- switchport mode access
+- shutdown
+
+Outcome:
+Eliminated unintended trunk formation and reduced attack surface.
+
+6. Banner Delimiter Misunderstanding
+------------------------------------
+Issue:
+Assumed Cisco IOS banner delimiters used control characters (e.g., Ctrl+C) or
+special syntax.
+
+Cause:
+Cisco documentation often uses "^C" as an example delimiter, which appears to
+be a control sequence but is actually just a literal character.
+
+Resolution:
+Learned that IOS banner delimiters can be *any single character* not present in
+the banner text. Adopted "!" as the standard delimiter.
+
+Outcome:
+Banner configured cleanly and reproducibly. No syntax errors after reload.
+
+7. Unsupported Commands on 3750X
+--------------------------------
+Issue:
+The command "no ip bootp server" returned an error.
+
+Cause:
+The WS‑C3750X‑48PF‑E does not support the BootP server feature; therefore the
+command is not available.
+
+Resolution:
+Acknowledged as platform‑specific behavior. No action required.
+
+Outcome:
+No missing hardening steps; the switch simply lacks the feature.
+
+8. Proxy‑ARP Disable Attempt
+----------------------------
+Issue:
+The command "no ip proxy-arp" returned an error.
+
+Cause:
+Proxy‑ARP is only supported on Layer‑3 interfaces. The 3750X is operating in
+Layer‑2 mode with no routed physical interfaces.
+
+Resolution:
+Confirmed that the feature is not applicable to this platform in L2 mode.
+
+Outcome:
+No configuration drift; behavior is correct for this hardware.
+
+9. STP Interface Detail Query
+-----------------------------
+Issue:
+"show spanning-tree interface Gi1/0/1 detail" returned no information.
+
+Cause:
+STP only tracks interfaces that are operationally up. The trunk ports were
+down during verification.
+
+Resolution:
+Confirmed that STP hardening (BPDU Guard, PortFast) is applied globally and
+does not require per‑interface state when ports are down.
+
+Outcome:
+STP configuration validated as correct.
+
+10. Reload Duration Concern
+---------------------------
+Issue:
+Reload time was longer than expected.
+
+Cause:
+The 3750X performs full POST, flash integrity checks, digital signature
+verification, and ASIC diagnostics on every cold boot.
+
+Resolution:
+Reviewed boot logs and confirmed all tests passed.
+
+Outcome:
+Switch hardware and software integrity verified; no issues present.
+
+SUMMARY
+-------
+All failures encountered were procedural or platform‑specific, not structural.
+Each issue was resolved cleanly, and the final configuration is stable,
+hardened, and fully aligned with the network plan and zero‑trust doctrine.
