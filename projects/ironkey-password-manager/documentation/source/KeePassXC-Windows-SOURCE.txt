@@ -1,9 +1,0 @@
-Filename: KeePassXC-2.7.11-Win64.zip
-Source URL: https://keepassxc.org/download/#windows
-SHA-256 Digest File: SHA256.txt
-Downloaded On: 2026-02-08
-Notes: Portable Windows version for IronKey project.
-
-
-Verified On: <date you ran sha256sum>
-Verification Result: Match / Mismatch
