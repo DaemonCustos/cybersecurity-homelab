@@ -1,0 +1,24 @@
+WORKFLOW DIAGRAM
+Switch + Router Pairing & Hardening Phase
+
+This document provides a sequential representation of the pairing and
+hardening workflow, ensuring reproducibility and clarity.
+
+=====================================================================
+1. Workflow Sequence
+---------------------------------------------------------------------
+[1] Trunk Bring-Up
+[2] VLAN Propagation Validation
+[3] L3 Gateway Validation
+[4] ACL Enforcement Validation
+[5] NAT Boundary Validation
+[6] DHCP Relay Validation
+[7] Logging Validation
+[8] CoPP Policy Validation
+[9] DHCP Snooping Trust Correction
+[10] LLDP Neighbor Validation
+[11] VTY ACL Validation
+[12] Default Service Sweep
+[13] Save State (write memory)
+[14] Documentation Freeze (this package)
+

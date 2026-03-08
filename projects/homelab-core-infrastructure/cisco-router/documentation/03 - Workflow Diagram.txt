@@ -1,0 +1,58 @@
+WORKFLOW DIAGRAM
+Router Phase — Cisco C1111‑8P
+
+This document provides a structured, sequential workflow describing the
+complete router build process. It reflects the actual operational order used
+during configuration and ensures reproducibility, auditability, and clarity.
+
+=====================================================================
+1. INITIAL SYSTEM PREPARATION
+=====================================================================
+  - Access device via console
+  - Enter privileged EXEC mode
+  - Enter global configuration mode
+  - Set hostname
+  - Configure domain name
+  - Generate SSH keys
+  - Configure AAA and local authentication
+  - Harden management plane services
+  - Configure logging to LOG-50
+
+=====================================================================
+2. WAN INTERFACE CONFIGURATION
+=====================================================================
+  - Identify WAN-facing interface (Gi0/0/0)
+  - Configure DHCP client for WAN
+  - Mark interface as NAT outside
+  - Verify upstream connectivity to ASUS gateway
+
+=====================================================================
+3. VLAN SUBINTERFACE CREATION
+=====================================================================
+For each VLAN (10–100):
+
+  - Create subinterface on Gi0/0/1
+  - Apply dot1Q encapsulation
+  - Assign gateway IP address
+  - Apply DHCP relay (ip helper-address 10.0.10.10)
+  - Mark as ip nat inside (for NAT-eligible VLANs)
+  - Add descriptive labels for clarity
+
+=====================================================================
+4. NAT CONFIGURATION
+=====================================================================
+  - Define NAT-INSIDE ACL with authorized VLANs:
+      20, 30, 40, 60, 70, 80, 90
+  - Apply NAT overload on WAN interface:
+      ip nat inside source list NAT-INSIDE interface Gi0/0/0 overload
+  - Verify NAT posture (no translations expected until switch pairing)
+
+=====================================================================
+5. ACL CREATION (ZERO-TRUST MODEL)
+=====================================================================
+For each VLAN, create a dedicated inbound ACL enforcing:
+
+  - DNS/NTP access to INFRA-10
+  - Outbound internet (if applicable)
+  - Full inter-VLAN isolation
+  -

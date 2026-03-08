@@ -1,0 +1,162 @@
+FAILURE ANALYSIS
+Router Phase — Cisco C1111‑8P
+
+This document records all failures, misconfigurations, corrections, and
+operational lessons learned during the router build. It exists to support
+auditability, reproducibility, and academic evaluation of the system’s
+development lifecycle.
+
+=====================================================================
+1. NAT-INSIDE DOCTRINE MISALIGNMENT
+=====================================================================
+Issue:
+  The initial NAT-INSIDE ACL did not include all internet-eligible VLANs.
+  Several VLANs were missing from the ACL, resulting in incomplete NAT
+  eligibility and inconsistent outbound behavior.
+
+Cause:
+  NAT markings (ip nat inside) were pre-staged on all subinterfaces, but the
+  NAT-INSIDE ACL was not updated to reflect the final VLAN doctrine.
+
+Resolution:
+  The NAT-INSIDE ACL was rebuilt to include only the VLANs authorized for
+  outbound internet access:
+    - 20, 30, 40, 60, 70, 80, 90
+
+Outcome:
+  NAT behavior now aligns with architectural intent, ensuring strict control
+  over which VLANs may exit the WAN boundary.
+
+=====================================================================
+2. ACL DOCTRINE EVOLUTION
+=====================================================================
+Issue:
+  Early ACLs did not fully reflect the zero-trust model later adopted for the
+  router. Some ACLs lacked explicit deny/log statements or did not enforce
+  strict inter-VLAN isolation.
+
+Cause:
+  The ACL doctrine matured during the build as the trust boundaries became
+  more clearly defined.
+
+Resolution:
+  All VLANs were assigned dedicated inbound ACLs with:
+    - DNS/NTP allowances to INFRA-10
+    - Optional outbound internet (per VLAN role)
+    - Full inter-VLAN deny/log enforcement
+    - Default deny/log for SIEM visibility
+
+Outcome:
+  ACL posture is now consistent, deterministic, and aligned with the
+  zero-trust architecture.
+
+=====================================================================
+3. IOS-XE FORGIVING SYNTAX VS. CATALYST STRICTNESS
+=====================================================================
+Issue:
+  Several ACL entries were initially entered with malformed prefixes (e.g.,
+  stray characters such as "$" or truncated commands). IOS-XE accepted these
+  lines without error, silently ignoring malformed input.
+
+Cause:
+  IOS-XE is more forgiving than Catalyst IOS, which would have rejected the
+  malformed syntax immediately.
+
+Resolution:
+  All ACLs were reviewed and re-entered cleanly. Verification commands
+  (show access-lists, show running-config | section) were used to confirm
+  correct compilation.
+
+Outcome:
+  The final ACLs contain no malformed entries, and the build process now
+  accounts for IOS-XE’s permissive parsing behavior.
+
+=====================================================================
+4. SUBINTERFACE STATE AND ACL LOGGING EXPECTATIONS
+=====================================================================
+Issue:
+  ACL deny logs did not appear in the SIEM during testing.
+
+Cause:
+  All router subinterfaces were in a down/down state because the switch trunk
+  was not yet connected. IOS-XE does not generate hardware-level ACL deny logs
+  on inactive interfaces.
+
+Resolution:
+  Logging behavior was validated conceptually, with the understanding that
+  ACL deny events will begin generating syslog messages once the switch is
+  connected and the subinterfaces transition to up/up.
+
+Outcome:
+  SIEM logging pipeline is confirmed operational; ACL deny visibility will
+  activate during the pairing stage.
+
+=====================================================================
+5. NAT TRANSLATION TABLE APPEARING EMPTY
+=====================================================================
+Issue:
+  NAT translation table showed zero active translations.
+
+Cause:
+  No VLANs were active (all subinterfaces down/down), and no clients were
+  generating outbound traffic.
+
+Resolution:
+  NAT configuration was validated independently of translation activity.
+  NAT translations will populate once the switch is connected and traffic
+  flows.
+
+Outcome:
+  NAT posture is correct; translation behavior will activate during live
+  traffic.
+
+=====================================================================
+6. CLI INPUT POLLUTION DURING LOG COPYING
+=====================================================================
+Issue:
+  During log copying, raw CLI output was accidentally pasted back into the
+  router, causing:
+    - Duplicate prompts
+    - Invalid command errors
+    - Misinterpreted text fragments
+
+Cause:
+  Terminal buffer contamination from mis-clicked clipboard operations.
+
+Resolution:
+  The session was reset using:
+    - end
+    - clear line 0 (if needed)
+  No configuration was altered or damaged.
+
+Outcome:
+  The router remained stable, and the configuration was unaffected.
+
+=====================================================================
+7. DELIMITER LESSON (CROSS-PHASE KNOWLEDGE)
+=====================================================================
+Issue:
+  During the switch phase, banner delimiters were misunderstood as requiring
+  control characters (e.g., ^C). This knowledge carried into the router phase.
+
+Cause:
+  Cisco documentation often uses "^C" as an example delimiter, which can be
+  misinterpreted as a control sequence.
+
+Resolution:
+  Learned that IOS/IOS-XE accepts any single character as a delimiter, as long
+  as it does not appear inside the banner text.
+
+Outcome:
+  Banner configuration is now deterministic and reproducible across devices.
+
+=====================================================================
+8. FINAL SYSTEM STATE
+=====================================================================
+All failures were resolved, all corrections applied, and the router was frozen
+in a clean, audit-ready state using:
+
+  write memory
+  copy running-config startup-config
+
+This represents the authoritative configuration for the router phase.

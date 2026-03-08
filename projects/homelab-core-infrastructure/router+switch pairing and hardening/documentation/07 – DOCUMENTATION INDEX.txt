@@ -1,0 +1,11 @@
+DOCUMENTATION INDEX
+Switch + Router Pairing & Hardening Phase
+
+=====================================================================
+1. Architecture Overview
+2. Failure Analysis
+3. Workflow Diagram
+4. Academic Summary
+5. Consolidated Configuration Block
+6. Command Log
+7. Documentation Index

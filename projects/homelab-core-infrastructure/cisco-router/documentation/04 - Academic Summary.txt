@@ -1,0 +1,146 @@
+ACADEMIC SUMMARY
+Router Phase — Cisco C1111‑8P
+
+This document provides an academic, depersonalized explanation of the router’s
+design, its architectural purpose, and the security and networking principles
+demonstrated throughout the build. It is intended for academic review and
+professional evaluation.
+
+=====================================================================
+1. PURPOSE OF THE ROUTER WITHIN THE NETWORK
+=====================================================================
+The Cisco C1111‑8P router serves as the central Layer‑3 gateway for a
+multi‑segment network. It provides inter‑VLAN routing, enforces zero‑trust
+security boundaries, manages NAT for internet‑eligible networks, and
+centralizes infrastructure services such as DHCP relay and SIEM logging.
+
+Its role is to:
+  - Segment the network into isolated trust zones
+  - Control traffic between those zones
+  - Provide secure access to external networks
+  - Support centralized infrastructure services
+  - Maintain auditability and operational clarity
+
+=====================================================================
+2. VLAN SEGMENTATION AND TRUST ZONES
+=====================================================================
+The router implements ten VLANs, each representing a distinct trust zone with
+a defined operational purpose. This segmentation reduces the attack surface,
+limits lateral movement, and ensures that devices only interact with the
+resources necessary for their function.
+
+Examples of trust zones include:
+  - Infrastructure (INFRA-10)
+  - Middleware (APP-20)
+  - Media and gaming (MEDIA-30, GAME-40)
+  - Administrative workstations (ADM-60)
+  - General LAN (LAN-70)
+  - Internal IoT (IOT-80)
+  - Streaming devices (STR-90)
+  - Research and sandbox environments (LAB-100)
+
+This structure demonstrates an understanding of network compartmentalization
+and the principle of least privilege.
+
+=====================================================================
+3. ZERO-TRUST ACCESS CONTROL
+=====================================================================
+Each VLAN is governed by a dedicated inbound ACL that enforces a zero‑trust
+model. The ACLs allow only the minimum required traffic:
+
+  - DNS and NTP to INFRA-10
+  - Outbound internet access for authorized VLANs
+  - No inter‑VLAN communication
+  - Default deny/log for SIEM visibility
+
+This approach demonstrates:
+  - Strong boundary enforcement
+  - Defense‑in‑depth
+  - Explicit allowlisting
+  - Comprehensive audit logging
+
+The ACL matrix reflects a mature understanding of modern security frameworks.
+
+=====================================================================
+4. NAT POSTURE AND INTERNET ELIGIBILITY
+=====================================================================
+The router uses a controlled NAT architecture to regulate which VLANs may
+access external networks. Only specific VLANs are marked as NAT‑eligible,
+ensuring that sensitive zones (INFRA-10, LOG-50, LAB-100) remain internal.
+
+This demonstrates:
+  - Understanding of NAT boundaries
+  - Controlled exposure to external networks
+  - Separation of internal and external trust domains
+
+=====================================================================
+5. CENTRALIZED DHCP RELAY AND INFRASTRUCTURE SERVICES
+=====================================================================
+All VLANs use DHCP relay to a centralized infrastructure server. This
+centralization simplifies management, ensures consistent addressing, and
+supports auditability through unified lease logging.
+
+This demonstrates:
+  - Knowledge of DHCP relay mechanisms
+  - Centralized service design
+  - Infrastructure consolidation principles
+
+=====================================================================
+6. SIEM LOGGING AND SECURITY OBSERVABILITY
+=====================================================================
+The router forwards system and ACL deny logs to a dedicated SIEM server. This
+provides visibility into unauthorized access attempts and supports forensic
+analysis.
+
+This demonstrates:
+  - Awareness of operational monitoring requirements
+  - Integration of network devices into security workflows
+  - Understanding of audit and compliance needs
+
+=====================================================================
+7. MANAGEMENT PLANE HARDENING
+=====================================================================
+The router’s management plane is secured through:
+  - SSH-only access
+  - AAA authentication
+  - Service minimization
+  - Secure banner configuration
+  - Logging and timestamping
+
+This demonstrates:
+  - Knowledge of secure device management
+  - Reduction of attack surface
+  - Best practices for administrative access
+
+=====================================================================
+8. REPRODUCIBILITY AND CONFIGURATION FREEZE
+=====================================================================
+The router was built using a deterministic, step‑by‑step workflow. After
+verification, the configuration was frozen using:
+
+  write memory
+  copy running-config startup-config
+
+This ensures:
+  - Reproducibility
+  - Auditability
+  - Configuration integrity
+  - A stable baseline for future phases
+
+=====================================================================
+9. ACADEMIC AND PROFESSIONAL COMPETENCIES DEMONSTRATED
+=====================================================================
+The router build demonstrates proficiency in:
+
+  - Layer‑3 routing and VLAN segmentation
+  - Zero‑trust network design
+  - ACL development and enforcement
+  - NAT architecture and boundary control
+  - DHCP relay and infrastructure integration
+  - SIEM logging and security observability
+  - Management plane hardening
+  - Deterministic workflow design
+  - Documentation and reproducibility practices
+
+These competencies align with industry standards for secure network design and
+reflect a professional, methodical approach to infrastructure engineering.

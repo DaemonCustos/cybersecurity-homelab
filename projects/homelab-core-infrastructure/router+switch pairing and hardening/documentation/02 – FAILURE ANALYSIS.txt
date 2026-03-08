@@ -1,0 +1,84 @@
+FAILURE ANALYSIS
+Switch + Router Pairing & Hardening Phase
+
+This document records issues encountered during the pairing and hardening
+process, along with their resolutions. It ensures transparency and provides
+context for future audits or rebuilds.
+
+=====================================================================
+1. DHCP Snooping Trust Omission
+---------------------------------------------------------------------
+Issue:
+DHCP Snooping was enabled globally and for VLAN10, but the trunk interface
+Gi1/0/1 was not trusted. This would have caused DHCP replies from the router
+to be dropped.
+
+Resolution:
+Gi1/0/1 was explicitly configured as a trusted DHCP Snooping interface.
+
+=====================================================================
+2. LLDP Neighbor Validation
+---------------------------------------------------------------------
+Issue:
+None. LLDP was used to validate physical and logical adjacency.
+
+Resolution:
+Switch correctly identified the router on Gi1/0/1, including all subinterfaces.
+
+=====================================================================
+3. VTY ACL Validation
+---------------------------------------------------------------------
+Issue:
+None. Validation confirmed that only the management VLAN(s) may access VTY
+lines on both devices.
+
+Resolution:
+No changes required.
+
+=====================================================================
+4. Logging Integration
+---------------------------------------------------------------------
+Issue:
+Switch was not exporting logs to SIEM.
+
+Resolution:
+Configured logging host 10.0.50.10, informational trap level, and timestamps.
+
+=====================================================================
+5. Optional Port Shutdown Doctrine (Gi1/0/2–Gi1/0/4)
+---------------------------------------------------------------------
+Issue:
+Doctrine recommends administratively shutting all unused access ports. Ports
+Gi1/0/2–Gi1/0/4 are already assigned for near-term use (server trunk, desktop,
+TV, router), so fully enforcing “E. SHUTDOWN” would conflict with planned
+operations.
+
+Resolution:
+- Gi1/0/2–Gi1/0/4 are configured with correct VLAN/trunk posture and left
+  administratively up, but remain physically disconnected until use.
+- All other unused ports are explicitly configured as access ports and
+  administratively shut.
+This preserves security for unknown ports while avoiding churn on ports
+with imminent, known assignments.
+
+=====================================================================
+6. Default Service Sweep
+---------------------------------------------------------------------
+Issue:
+None. Sweep confirmed no legacy or insecure services enabled (no HTTP, no CDP).
+
+Resolution:
+No changes required.
+
+=====================================================================
+7. CoPP Policy Validation
+---------------------------------------------------------------------
+Issue:
+None. CoPP required validation to ensure router CPU protection.
+
+Resolution:
+"show policy-map control-plane input" confirmed:
+- COPP-POLICY applied to control-plane
+- ICMP class incrementing normally
+- SSH, DHCP, SYSLOG classes conforming
+- No unexpected drops in class-default

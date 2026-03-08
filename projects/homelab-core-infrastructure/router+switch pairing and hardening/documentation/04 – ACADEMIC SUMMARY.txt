@@ -1,0 +1,46 @@
+ACADEMIC SUMMARY
+Switch + Router Pairing & Hardening Phase
+
+This document provides an academically oriented summary of the competencies,
+security principles, and architectural decisions demonstrated during the
+pairing and hardening process.
+
+=====================================================================
+1. Architectural Competencies Demonstrated
+---------------------------------------------------------------------
+- Layer-2/Layer-3 boundary design
+- VLAN segmentation and trunking
+- DHCP relay architecture
+- ACL-based segmentation
+- NAT boundary enforcement
+- Control-plane protection (CoPP design and verification)
+- Management-plane restriction
+- Centralized logging integration
+
+=====================================================================
+2. Security Principles Applied
+---------------------------------------------------------------------
+- Zero-trust segmentation
+- Principle of least privilege (VTY ACLs)
+- Control-plane policing to protect router CPU
+- DHCP Snooping trust anchoring
+- STP hardening (portfast edge trunk, bpduguard)
+- Service minimization (no HTTP, no CDP)
+
+=====================================================================
+3. Operational Rigor
+---------------------------------------------------------------------
+- Deterministic verification of each subsystem
+- Validation of LLDP adjacency
+- Validation of DHCP Snooping behavior
+- Validation of CoPP class behavior
+- Validation of logging posture
+- Validation of management-plane restrictions
+- Final state commit prior to documentation freeze
+
+=====================================================================
+4. Outcome
+---------------------------------------------------------------------
+The switch–router pairing is fully hardened, validated, and saved. This
+documentation serves as the authoritative baseline for future audits,
+rebuilds, and operational continuity.

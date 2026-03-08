@@ -1,0 +1,139 @@
+ARCHITECTURE OVERVIEW
+Router Phase — Cisco C1111‑8P
+
+This document provides a high‑level architectural description of the router’s
+role, trust boundaries, VLAN segmentation, NAT posture, ACL doctrine, and
+interactions with the switch and upstream ASUS gateway. It defines the router’s
+position within the overall network and the security principles guiding its
+design.
+
+=====================================================================
+1. DEVICE ROLE AND POSITION
+=====================================================================
+The Cisco C1111‑8P functions as the core Layer‑3 gateway for all internal
+VLANs. It provides:
+
+  - Inter‑VLAN routing
+  - Zero‑trust boundary enforcement via ACLs
+  - Centralized DHCP relay to INFRA‑10
+  - NAT for internet‑eligible VLANs
+  - SIEM logging to LOG‑50
+  - Management plane hardening (AAA, SSH, domain keys)
+  - A deterministic, audit‑ready configuration
+
+The upstream ASUS router serves as the WAN boundary and DMZ for untrusted IoT.
+The Cisco router is the authoritative internal gateway.
+
+=====================================================================
+2. VLAN AND SUBINTERFACE ARCHITECTURE
+=====================================================================
+The router implements ten VLANs using dot1Q subinterfaces on Gi0/0/1:
+
+  - VLAN 10  CORE‑10     (Infrastructure)
+  - VLAN 20  APP‑20      (Middleware)
+  - VLAN 30  MEDIA‑30    (Media)
+  - VLAN 40  GAME‑40     (Gaming)
+  - VLAN 50  LOG‑50      (SIEM)
+  - VLAN 60  ADM‑60      (Admin)
+  - VLAN 70  LAN‑70      (General LAN)
+  - VLAN 80  IOT‑80      (Internal IoT)
+  - VLAN 90  STR‑90      (Streaming)
+  - VLAN 100 LAB‑100     (Research/Sandbox)
+
+Each subinterface includes:
+  - dot1Q encapsulation
+  - A /24 gateway address
+  - DHCP relay to 10.0.10.10
+  - ip nat inside (for NAT‑eligible VLANs)
+  - An inbound ACL enforcing zero‑trust boundaries
+
+=====================================================================
+3. NAT ARCHITECTURE
+=====================================================================
+NAT is applied only to VLANs that require outbound internet access. The
+NAT‑INSIDE ACL defines the doctrine:
+
+  Internet‑eligible VLANs:
+    - APP‑20
+    - MEDIA‑30
+    - GAME‑40
+    - ADM‑60
+    - LAN‑70
+    - IOT‑80
+    - STR‑90
+
+  Non‑internet VLANs:
+    - CORE‑10
+    - LOG‑50
+    - LAB‑100
+
+NAT is implemented as:
+  ip nat inside source list NAT-INSIDE interface GigabitEthernet0/0/0 overload
+
+This ensures strict control over which networks may exit the WAN boundary.
+
+=====================================================================
+4. ACL DOCTRINE AND ZERO‑TRUST MODEL
+=====================================================================
+Each VLAN has a dedicated inbound ACL enforcing:
+
+  - DNS/NTP access to INFRA‑10
+  - Outbound internet (for eligible VLANs)
+  - No inter‑VLAN access
+  - No access to ADMIN‑60 or LOG‑50 unless explicitly allowed
+  - Default deny/log for SIEM visibility
+
+This creates a hardened, compartmentalized network where each VLAN is isolated
+and only permitted to perform its intended function.
+
+=====================================================================
+5. DHCP RELAY AND INFRASTRUCTURE SERVICES
+=====================================================================
+All VLANs use centralized DHCP relay:
+
+  ip helper-address 10.0.10.10
+
+This ensures:
+  - Consistent addressing
+  - Centralized lease logging
+  - Predictable service behavior
+
+INFRA‑10 hosts DNS, NTP, and DHCP services for the entire network.
+
+=====================================================================
+6. SIEM LOGGING PIPELINE
+=====================================================================
+All ACL denies and system events are logged to LOG‑50:
+
+  logging host 10.0.50.10
+
+This provides:
+  - Full visibility into inter‑VLAN violations
+  - Audit trails for NAT and routing behavior
+  - Security monitoring for unauthorized access attempts
+
+=====================================================================
+7. RELATIONSHIP TO SWITCH AND SERVER
+=====================================================================
+The router pairs with the switch via a dot1Q trunk on Gi0/0/1. The switch
+provides Layer‑2 segmentation; the router provides Layer‑3 enforcement.
+
+The server (Phase 3) depends on:
+  - Router VLANs
+  - DHCP relay
+  - ACL boundaries
+  - NAT posture
+  - SIEM logging
+
+The router must be fully built and frozen before pairing with the switch or
+deploying the server.
+
+=====================================================================
+8. SYSTEM STATE
+=====================================================================
+The router configuration has been fully validated and frozen via:
+
+  write memory
+  copy running-config startup-config
+
+This represents the authoritative, audit‑ready state of the system.

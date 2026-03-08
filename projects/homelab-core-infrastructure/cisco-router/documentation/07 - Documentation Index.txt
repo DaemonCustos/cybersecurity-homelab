@@ -1,0 +1,49 @@
+DOCUMENTATION INDEX
+Router Phase — Cisco C1111‑8P
+
+This index provides a structured reference to all documentation files produced
+for the router build. Each document corresponds to a specific aspect of the
+architecture, workflow, or final configuration.
+
+=====================================================================
+1. Architecture Overview
+---------------------------------------------------------------------
+A high-level description of the router’s role, VLAN segmentation, NAT
+boundaries, ACL doctrine, DHCP relay architecture, and SIEM integration.
+
+=====================================================================
+2. Failure Analysis
+---------------------------------------------------------------------
+A detailed record of all issues encountered during the build, including NAT
+doctrine corrections, ACL evolution, IOS-XE parsing behavior, and operational
+lessons learned.
+
+=====================================================================
+3. Workflow Diagram
+---------------------------------------------------------------------
+A sequential, reproducible workflow describing the full router build process
+from initial setup through configuration freeze.
+
+=====================================================================
+4. Academic Summary
+---------------------------------------------------------------------
+A depersonalized, academically oriented explanation of the router’s design,
+security posture, and the competencies demonstrated throughout the build.
+
+=====================================================================
+5. Consolidated Configuration Block
+---------------------------------------------------------------------
+The complete, OPSEC-safe, authoritative configuration of the router after the
+final freeze. All sensitive information removed.
+
+=====================================================================
+6. Command Log
+---------------------------------------------------------------------
+A chronological, procedural record of the commands executed during the router
+build. No configuration content or sensitive material included.
+
+=====================================================================
+7. Documentation Index (this document)
+---------------------------------------------------------------------
+A reference map linking all router documentation files for clarity,
+navigation, and archival organization.

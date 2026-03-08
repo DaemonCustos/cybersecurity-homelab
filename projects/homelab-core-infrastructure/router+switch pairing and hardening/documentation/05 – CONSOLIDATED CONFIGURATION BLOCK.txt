@@ -1,0 +1,822 @@
+CONSOLIDATED CONFIGURATION BLOCK
+Switch + Router Pairing & Hardening Phase
+
+This document contains the final, saved configurations of both devices.
+Sensitive information has been removed.
+
+=====================================================================
+1. CITADEL-CORE (Router)
+---------------------------------------------------------------------
+
+CORE-ROUTER – FINAL CONFIGURATION (OPSEC-SCRUBBED)
+
+version 17.3
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service sequence-numbers
+service call-home
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform hardware throughput crypto 50000
+hostname CORE-ROUTER
+boot-start-marker
+boot system flash:<REDACTED-IMAGE>.SPA.bin
+boot-end-marker
+aaa new-model
+aaa authentication login default local
+aaa authentication login CONSOLE local
+aaa authentication login VTY local
+aaa authorization exec default local
+aaa session-id common
+no ip domain lookup
+ip domain name <REDACTED.DOMAIN>
+login on-success log
+subscriber templating
+multilink bundle-name authenticated
+no device-tracking logging theft
+!
+! crypto PKI trustpoints and certificates removed for OPSEC
+! crypto pki trustpoint SLA-TrustPoint
+! crypto pki trustpoint TP-self-signed-XXXX
+! crypto pki certificate chain SLA-TrustPoint
+! crypto pki certificate chain TP-self-signed-XXXX
+!
+no license feature hseck9
+license udi pid <REDACTED-PID> sn <REDACTED-SERIAL>
+license boot level securityk9
+memory free low-watermark processor 71791
+diagnostic bootup level minimal
+spanning-tree extend system-id
+username CORE-ADMIN privilege 15 secret 9 <REDACTED-HASH>
+redundancy
+ mode none
+vlan internal allocation policy ascending
+no cdp run
+lldp run
+!
+class-map match-any COPP-CLASS-SSH
+ match access-group name COPP-SSH
+class-map match-any COPP-CLASS-ROUTING
+ match access-group name COPP-ROUTING
+class-map match-any COPP-CLASS-ICMP
+ match access-group name COPP-ICMP
+class-map match-any COPP-CLASS-DHCP
+ match access-group name COPP-DHCP
+class-map match-any COPP-CLASS-SYSLOG
+ match access-group name COPP-SYSLOG
+!
+policy-map COPP-POLICY
+ class COPP-CLASS-SSH
+  police 200000 40000 conform-action transmit  exceed-action drop
+ class COPP-CLASS-ICMP
+  police 500000 100000 conform-action transmit  exceed-action drop
+ class COPP-CLASS-DHCP
+  police 500000 100000 conform-action transmit  exceed-action drop
+ class COPP-CLASS-SYSLOG
+  police 200000 40000 conform-action transmit  exceed-action drop
+ class COPP-CLASS-ROUTING
+ class class-default
+  police 100000 20000 conform-action transmit  exceed-action drop
+!
+interface GigabitEthernet0/0/0
+ description WAN-DMZ-TO-UPSTREAM
+ ip address dhcp
+ ip nat outside
+ negotiation auto
+!
+interface GigabitEthernet0/0/1
+ no ip address
+ no ip redirects
+ no ip proxy-arp
+ negotiation auto
+ no cdp enable
+!
+interface GigabitEthernet0/0/1.10
+ description CORE-10
+ encapsulation dot1Q 10
+ ip address 10.0.10.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN10-INFRA-IN in
+!
+interface GigabitEthernet0/0/1.20
+ description APP-20
+ encapsulation dot1Q 20
+ ip address 10.0.20.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN20-MIDDLEWARE-IN in
+!
+interface GigabitEthernet0/0/1.30
+ description MEDIA-30
+ encapsulation dot1Q 30
+ ip address 10.0.30.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN30-MEDIA-IN in
+!
+interface GigabitEthernet0/0/1.40
+ description GAME-40
+ encapsulation dot1Q 40
+ ip address 10.0.40.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN40-GAME-IN in
+!
+interface GigabitEthernet0/0/1.50
+ description LOG-50
+ encapsulation dot1Q 50
+ ip address 10.0.50.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+!
+interface GigabitEthernet0/0/1.60
+ description ADM-60
+ encapsulation dot1Q 60
+ ip address 10.0.60.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN60-ADMIN-IN in
+!
+interface GigabitEthernet0/0/1.70
+ description LAN-70
+ encapsulation dot1Q 70
+ ip address 10.0.70.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN70-LAN-IN in
+!
+interface GigabitEthernet0/0/1.80
+ description IOT-80
+ encapsulation dot1Q 80
+ ip address 10.0.80.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN80-IOT-IN in
+!
+interface GigabitEthernet0/0/1.90
+ description STR-90
+ encapsulation dot1Q 90
+ ip address 10.0.90.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN90-STR-IN in
+!
+interface GigabitEthernet0/0/1.100
+ description LAB-100
+ encapsulation dot1Q 100
+ ip address 10.0.100.1 255.255.255.0
+ ip helper-address 10.0.10.10
+ ip nat inside
+ ip access-group ACL-VLAN100-RESEARCH-IN in
+!
+interface GigabitEthernet0/1/0
+!
+interface GigabitEthernet0/1/1
+!
+interface GigabitEthernet0/1/2
+!
+interface GigabitEthernet0/1/3
+!
+interface GigabitEthernet0/1/4
+!
+interface GigabitEthernet0/1/5
+!
+interface GigabitEthernet0/1/6
+!
+interface GigabitEthernet0/1/7
+!
+interface Vlan1
+ no ip address
+!
+no ip http server
+no ip http secure-server
+ip forward-protocol nd
+ip nat inside source list NAT-INSIDE interface GigabitEthernet0/0/0 overload
+ip route 0.0.0.0 0.0.0.0 dhcp
+ip ssh time-out 60
+ip ssh version 2
+!
+ip access-list standard NAT-INSIDE
+ 10 remark Internet-eligible VLANs only
+ 10 permit 10.0.20.0 0.0.0.255
+ 20 permit 10.0.30.0 0.0.0.255
+ 30 permit 10.0.40.0 0.0.0.255
+ 40 permit 10.0.60.0 0.0.0.255
+ 50 permit 10.0.70.0 0.0.0.255
+ 60 permit 10.0.80.0 0.0.0.255
+ 70 permit 10.0.90.0 0.0.0.255
+ip access-list standard VTY-ADMIN
+ 10 permit 10.0.60.0 0.0.0.255
+ 20 deny   any
+!
+ip access-list extended ACL-VLAN10-INFRA-IN
+ 10 remark INFRA-10: core services, strictly controlled
+ 10 remark Allow DNS queries from all VLANs
+ 10 permit udp any host 10.0.10.10 eq domain
+ 20 remark Allow NTP requests from all VLANs
+ 20 permit udp any host 10.0.10.10 eq ntp
+ 30 remark Allow DHCP requests (client -> server)
+ 30 permit udp any host 10.0.10.10 eq bootps
+ 40 permit udp any host 10.0.10.10 eq bootpc
+ 50 remark Allow Admin VLAN full access
+ 50 permit ip 10.0.60.0 0.0.0.255 host 10.0.10.10
+ 60 remark Allow SIEM to pull logs or receive pushes
+ 60 permit ip 10.0.50.0 0.0.0.255 host 10.0.10.10
+ 70 remark Block outbound internet
+ 70 deny   ip 10.0.10.0 0.0.0.255 any log
+ 80 remark Block unauthorized inter-VLAN
+ 80 deny   ip any 10.0.10.0 0.0.0.255 log
+ 90 remark Default deny
+ 90 deny   ip any any log
+!
+ip access-list extended ACL-VLAN100-RESEARCH-IN
+ 10 remark LAB-100: sandbox + controlled pentest zone
+ 10 remark Allow DNS to infra
+ 10 permit udp 10.0.100.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra
+ 20 permit udp 10.0.100.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow intra-VLAN traffic
+ 30 permit ip 10.0.100.0 0.0.0.255 10.0.100.0 0.0.0.255
+ 40 remark Block inter-VLAN by default
+ 40 deny   ip 10.0.100.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Block internet by default
+ 50 deny   ip 10.0.100.0 0.0.0.255 any log
+ 60 remark Default deny
+ 60 deny   ip any any log
+!
+ip access-list extended ACL-VLAN20-MIDDLEWARE-IN
+ 10 remark Middleware VLAN: DNS/NTP + SIEM logging + outbound internet
+ 10 remark Allow DNS to infra
+ 10 permit udp 10.0.20.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra
+ 20 permit udp 10.0.20.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow log forwarding to SIEM
+ 30 permit ip 10.0.20.0 0.0.0.255 10.0.50.0 0.0.0.255
+ 40 remark Allow outbound internet (Discord/cloud)
+ 40 permit ip 10.0.20.0 0.0.0.255 any
+ 50 remark Default deny for all other inter-VLAN
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN30-MEDIA-IN
+ 10 remark MEDIA-30: DNS/NTP + outbound internet, no inter-VLAN
+ 10 remark Allow DNS to infra
+ 10 permit udp 10.0.30.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra
+ 20 permit udp 10.0.30.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow outbound internet
+ 30 permit ip 10.0.30.0 0.0.0.255 any
+ 40 remark Block all inter-VLAN
+ 40 deny   ip 10.0.30.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Default deny
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN40-GAME-IN
+ 10 remark GAME-40: DNS/NTP + outbound internet, no inter-VLAN
+ 10 remark Allow DNS to infra
+ 10 permit udp 10.0.40.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra
+ 20 permit udp 10.0.40.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow outbound internet
+ 30 permit ip 10.0.40.0 0.0.0.255 any
+ 40 remark Block all inter-VLAN
+ 40 deny   ip 10.0.40.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Default deny
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN60-ADMIN-IN
+ 10 remark Admin VLAN: full access, log
+ 10 permit ip 10.0.60.0 0.0.0.255 any
+ 20 remark ADMIN-60: DNS/NTP + outbound internet + admin outbound to internal hosts
+ 20 remark Allow DNS to infra
+ 20 permit udp 10.0.60.0 0.0.0.255 host 10.0.10.10 eq domain
+ 30 remark Allow NTP to infra
+ 30 permit udp 10.0.60.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 40 remark Allow admin outbound to internal hosts (SSH/RDP/HTTPS/etc.)
+ 40 permit ip 10.0.60.0 0.0.0.255 10.0.0.0 0.0.255.255
+ 50 remark Default deny for inbound or unauthorized traffic
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN70-LAN-IN
+ 10 remark LAN-70: DNS/NTP + outbound internet, no inter-VLAN
+ 10 remark Allow DNS to infra
+ 10 permit udp 10.0.70.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra
+ 20 permit udp 10.0.70.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow outbound internet
+ 30 permit ip 10.0.70.0 0.0.0.255 any
+ 40 remark Block all inter-VLAN
+ 40 deny   ip 10.0.70.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Default deny
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN80-IOT-IN
+ 10 remark Allow DNS to infra only
+ 10 permit udp 10.0.80.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra only
+ 20 permit udp 10.0.80.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow outbound internet
+ 30 permit ip 10.0.80.0 0.0.0.255 any
+ 40 remark Block all inter-VLAN
+ 40 deny   ip 10.0.80.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Default deny
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN90-STR-IN
+ 10 remark STR-90: DNS/NTP + outbound internet, no inter-VLAN
+ 10 remark Allow DNS to infra
+ 10 permit udp 10.0.90.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra
+ 20 permit udp 10.0.90.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow outbound internet
+ 30 permit ip 10.0.90.0 0.0.0.255 any
+ 40 remark Block all inter-VLAN
+ 40 deny   ip 10.0.90.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Default deny
+ 50 deny   ip any any log
+!
+ip access-list extended ACL-VLAN90-STREAM-IN
+ 10 remark Allow DNS to infra only
+ 10 permit udp 10.0.90.0 0.0.0.255 host 10.0.10.10 eq domain
+ 20 remark Allow NTP to infra only
+ 20 permit udp 10.0.90.0 0.0.0.255 host 10.0.10.10 eq ntp
+ 30 remark Allow outbound internet
+ 30 permit ip 10.0.90.0 0.0.0.255 any
+ 40 remark Block all inter-VLAN
+ 40 deny   ip 10.0.90.0 0.0.0.255 10.0.0.0 0.0.255.255 log
+ 50 remark Default deny
+ 50 deny   ip any any log
+!
+ip access-list extended COPP-DHCP
+ 10 permit udp any eq bootps any eq bootpc
+ 20 permit udp any eq bootpc any eq bootps
+ip access-list extended COPP-ICMP
+ 10 permit icmp any any
+ip access-list extended COPP-ROUTING
+ 10 permit ospf any any
+ 20 permit eigrp any any
+ 30 permit udp any any eq rip
+ 40 permit tcp any any eq bgp
+ip access-list extended COPP-SSH
+ 10 permit tcp any any eq 22
+ip access-list extended COPP-SYSLOG
+ 10 permit udp any any eq syslog
+!
+logging facility local4
+logging host 10.0.50.10
+!
+control-plane
+ service-policy input COPP-POLICY
+!
+banner login ^C
+<REDACTED-BANNER-LOGIN>
+^C
+!
+line con 0
+ transport preferred none
+ transport input none
+ stopbits 1
+line vty 0 4
+ access-class VTY-ADMIN in
+ logging synchronous
+ transport input ssh
+!
+call-home
+ contact-email-addr <REDACTED-EMAIL>
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+ntp server 10.0.10.10
+end
+
+
+
+
+=====================================================================
+2. CITADEL-SWITCH (Switch)
+---------------------------------------------------------------------
+
+ACCESS-SWITCH – FINAL CONFIGURATION (OPSEC-SCRUBBED)
+
+version 15.2
+no service pad
+no service timestamps debug uptime
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname ACCESS-SWITCH
+!
+boot-start-marker
+boot-end-marker
+!
+username ADMIN-USER privilege 15 secret 5 <REDACTED-HASH>
+username ADMIN-USER2 privilege 15 secret 5 <REDACTED-HASH>
+aaa new-model
+aaa authentication login default local
+aaa authorization exec default local
+aaa session-id common
+switch 1 provision ws-c3750x-48p
+system mtu routing 1500
+no ip source-route
+ip dhcp snooping vlan 10
+ip dhcp snooping
+no ip domain-lookup
+ip domain-name <REDACTED.DOMAIN>
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+vlan internal allocation policy ascending
+no cdp run
+lldp run
+!
+interface FastEthernet0
+ no ip address
+!
+interface GigabitEthernet1/0/1
+ description UPLINK-ROUTER
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80,90,100
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport nonegotiate
+ spanning-tree portfast edge trunk
+ spanning-tree bpduguard enable
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/2
+ description SERVER-TRUNK
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport nonegotiate
+ spanning-tree portfast edge trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/3
+ description DESKTOP-LAN70
+ switchport access vlan 70
+ switchport mode access
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/4
+ description TV-STREAMING
+ switchport access vlan 90
+ switchport mode access
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/5
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/6
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/7
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/8
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/9
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/10
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/11
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/12
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/13
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/14
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/15
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/16
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/17
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/18
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/19
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/20
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/21
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/22
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/23
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/24
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/25
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/26
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/27
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/28
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/29
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/30
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/31
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/32
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/33
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/34
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/35
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/36
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/37
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/38
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/39
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/40
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/41
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/42
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/43
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/44
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/45
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/46
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/47
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/0/48
+ description UNUSED-SHUT
+ switchport mode access
+ shutdown
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet1/1/1
+!
+interface GigabitEthernet1/1/2
+!
+interface GigabitEthernet1/1/3
+!
+interface GigabitEthernet1/1/4
+!
+interface TenGigabitEthernet1/1/1
+!
+interface TenGigabitEthernet1/1/2
+!
+interface Vlan1
+ no ip address
+!
+interface Vlan10
+ description *** CORE-10 - Switch Management ***
+ ip address 10.0.10.2 255.255.255.0
+!
+ip default-gateway 10.0.10.1
+ip forward-protocol nd
+no ip http server
+no ip http secure-server
+ip ssh version 2
+!
+ip access-list standard MGMT-VTY
+ permit 10.0.10.0 0.0.0.255
+!
+logging host 10.0.50.10
+!
+banner exec ^C
+<REDACTED-BANNER-EXEC>
+^C
+banner login ^C
+<REDACTED-BANNER-LOGIN>
+^C
+banner motd ^C
+<REDACTED-BANNER-MOTD>
+^C
+!
+line con 0
+ transport preferred none
+line vty 0 4
+ access-class MGMT-VTY in
+ transport input ssh
+line vty 5 15
+!
+end

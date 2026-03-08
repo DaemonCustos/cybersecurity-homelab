@@ -1,0 +1,73 @@
+ARCHITECTURE OVERVIEW
+Switch + Router Pairing & Hardening Phase
+
+This document provides a high-level architectural description of the
+switch–router pairing, including VLAN segmentation, trunking, DHCP relay,
+ACL enforcement, NAT boundaries, CoPP posture, and management-plane controls.
+It defines the operational role of each device and the security model
+governing their interaction.
+
+=====================================================================
+1. System Components
+---------------------------------------------------------------------
+CORE-ROUTER (Router)
+- Provides L3 gatewaying for VLANs 10–100
+- Enforces ACLs for east–west segmentation
+- Performs NAT for northbound traffic
+- Acts as DHCP relay for all VLANs
+- Enforces CoPP for CPU protection
+- Sends logs to SIEM at 10.0.50.10
+
+ACCESS-SWITCH (Switch)
+- Provides L2 segmentation for VLANs 10–100
+- Maintains hardened 802.1Q trunk to router
+- Enforces STP protections (portfast edge trunk, bpduguard)
+- Restricts management-plane access to VLAN10
+- Sends logs to SIEM at 10.0.50.10
+
+=====================================================================
+2. VLAN Segmentation Model
+---------------------------------------------------------------------
+VLAN10  - Management
+VLAN20  - Applications
+VLAN30  - Media
+VLAN40  - Gaming
+VLAN50  - Logging/SIEM
+VLAN60  - Administration
+VLAN70  - LAN Users
+VLAN80  - IoT
+VLAN90  - Streaming
+VLAN100 - Lab/Research
+
+Each VLAN is routed by a corresponding subinterface on the router.
+
+=====================================================================
+3. Trunk Architecture
+---------------------------------------------------------------------
+A single 802.1Q trunk connects the switch and router:
+
+Switch Gi1/0/1  ↔  Router Gi0/0/1
+
+- Allowed VLANs: 10–100
+- DTP disabled (nonegotiate)
+- STP portfast edge trunk enabled
+- BPDU Guard enabled
+- DHCP Snooping trust enabled
+
+=====================================================================
+4. Security Architecture
+---------------------------------------------------------------------
+- Zero-trust segmentation enforced by router ACLs
+- DHCP Snooping active on VLAN10 with trusted trunk
+- CoPP policy active on router control-plane (SSH, ICMP, DHCP, SYSLOG,
+  routing protocols, class-default)
+- Management-plane restricted to specific management VLANs
+- Logging exported to SIEM
+- All unused switchports are administratively shut
+
+=====================================================================
+5. Operational Purpose
+---------------------------------------------------------------------
+This pairing forms the backbone of the lab network, providing deterministic
+L2/L3 boundaries, hardened control-plane behavior, and a reproducible
+foundation for server and client onboarding.
